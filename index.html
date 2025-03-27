@@ -78,8 +78,8 @@
 
     <form id="deletionForm">
       <label for="mobile">Enter your mobile number:</label>
-      <input type="text" id="mobile" name="mobile" placeholder="e.g., +1234567890" required>
-      <button type="submit">Submit Request</button>
+      <input type="text" id="mobile" name="mobile" placeholder="+91XXXXXXXXXX" required>
+      <button type="submit" id="submitButton">Submit Request</button>
     </form>
 
     <div id="confirmationMessage" class="confirmation">
@@ -87,6 +87,60 @@
     </div>
   </div>
 
- <script src="app.js"></script>
+  <script>
+    const API_URL = 'https://0gb8de1kda.execute-api.us-east-1.amazonaws.com/2order/2order/users'; // Change with your real API URL
+
+    // Handle form submission
+    document.getElementById('deletionForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      // Get mobile number from input field
+      const mobileNumber = document.getElementById('mobile').value;
+
+      // Validate mobile number (Check for "+91" and exactly 10 digits after it)
+      const phoneRegex = /^\+91\d{10}$/;
+
+      if (!phoneRegex.test(mobileNumber)) {
+        alert('Please enter a valid mobile number in the format +91 followed by 10 digits.');
+        return;
+      }
+
+      // Disable the submit button and change text to 'Loading...'
+      const submitButton = document.getElementById('submitButton');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Loading...';
+
+      try {
+        // Make the DELETE request with the mobile number in the request body
+        const response = await fetch(API_URL, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': 'accessToken', // Include the token in request header
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ mobile: mobileNumber }),
+        });
+
+        // Check if the response was successful
+        if (!response.ok) {
+          throw new Error('Failed to delete account');
+        }
+
+        // Handle success
+        const data = await response.json();
+        // Show confirmation message
+        document.getElementById('confirmationMessage').style.display = 'block';
+        alert('Account deletion request submitted successfully!');
+        
+      } catch (error) {
+        // Handle error
+        alert('Error: ' + error.message);
+      } finally {
+        // Re-enable the button and reset text
+        submitButton.disabled = false;
+        submitButton.textContent = 'Submit Request';
+      }
+    });
+  </script>
 </body>
 </html>
